@@ -1,6 +1,11 @@
 package com.example;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +18,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Date;
+import java.util.List;
 
 import static java.util.Arrays.asList;
 import static javafx.scene.input.KeyCode.T;
@@ -32,6 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class FlightControllerTest {
     @Autowired
     private MockMvc mvc;
+    private Gson gson = new GsonBuilder().create();
 
 
     @Test
@@ -66,7 +74,136 @@ public class FlightControllerTest {
 
     }
 
+    @Test
+    public void testCalculateTicketPrice_version1() throws Exception {
 
+        MockHttpServletRequestBuilder request = post("/flights/tickets/total")
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .content("  {\n    \"tickets\": [\n      {\n        \"Passenger\": {\n          \"Firstname\": \"Some name\",\n          \"Lastname\": \"Some other name\"\n        },\n        \"Price\": 200\n      },\n      {\n        \"Passenger\": {\n          \"Firstname\": \"Name B\",\n          \"Lastname\": \"Name C\"\n        },\n        \"Price\": 150\n      }\n    ]\n  }");
+
+        this.mvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(content().json("{\n  \"result\": 350\n}"));
+    }
+
+    @Test
+    public void testCalculateTicketPrice_version2() throws Exception {
+
+        String json = getJSON("/tickets.json");
+
+
+        MockHttpServletRequestBuilder request = post("/flights/tickets/total")
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .content(json);
+
+        this.mvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(content().json("{\n  \"result\": 350\n}"));
+    }
+
+
+    @Test
+    public void testCalculateTicketPrice_version3() throws Exception {
+
+        Flight airPlane = new Flight();
+        Ticket ticket = new Ticket();
+        Person passenger = new Person();
+        passenger.setFirstname("sunil");
+        passenger.setLastname("anil");
+        ticket.setPassenger(passenger);
+        ticket.setPrice(10);
+
+        Ticket tickets2 = new Ticket();
+
+        Person passenger2 = new Person();
+        passenger2.setFirstname("rop");
+        passenger2.setLastname("swa");
+        tickets2.setPassenger(passenger2);
+        tickets2.setPrice(60);
+
+        airPlane.setTickets(asList(ticket, tickets2));
+
+        MockHttpServletRequestBuilder request = post("/flights/tickets/total")
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .content(gson.toJson(airPlane));
+
+        this.mvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(content().json("{\n  \"result\": 70\n}"));
+    }
+
+    public static class Flight {
+
+        public List<Ticket> getTickets() {
+            return tickets;
+        }
+
+        public void setTickets(List<Ticket> tickets) {
+            this.tickets = tickets;
+        }
+
+        private List<Ticket> tickets;
+
+
+
+
+    }
+
+
+    public static class Ticket {
+
+        public Person getPassenger() {
+            return Passenger;
+        }
+
+        public void setPassenger(Person passenger) {
+            Passenger = passenger;
+        }
+
+        public int getPrice() {
+            return Price;
+        }
+
+        public void setPrice(int price) {
+            Price = price;
+        }
+
+        Person Passenger;
+        int Price;
+
+
+    }
+
+
+    public static class Person
+    {
+        String Firstname;
+
+        public String getFirstname() {
+            return Firstname;
+        }
+
+        public void setFirstname(String firstname) {
+            Firstname = firstname;
+        }
+
+        public String getLastname() {
+            return Lastname;
+        }
+
+        public void setLastname(String lastname) {
+            Lastname = lastname;
+        }
+
+        String Lastname;
+
+
+    }
+
+    private String getJSON(String path) throws Exception {
+        URL url = this.getClass().getResource(path);
+        return new String(Files.readAllBytes(Paths.get(url.getFile())));
+    }
 
 
 }

@@ -3,9 +3,7 @@ package com.example;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -83,6 +81,17 @@ public class FlightController {
 
 
         return flights;
+    }
+
+    @PostMapping("/flights/tickets/total")
+    public FlightTotal calculateFlightTotal(@RequestBody TicketDetail airplane) {
+        FlightTotal flightTotal = new FlightTotal();
+        Integer total = airplane.getTickets().stream().
+                mapToInt(a -> a.getPrice()).sum();
+
+        flightTotal.setResult(total);
+
+        return flightTotal;
     }
 
 
@@ -163,6 +172,40 @@ public class FlightController {
         public void setLastName(String lastName) {
             this.lastName = lastName;
         }
+    }
+
+    public static class FlightTotal
+    {
+        int result;
+
+        public int getResult() {
+            return result;
+        }
+
+        public void setResult(int result) {
+            this.result = result;
+        }
+
+
+
+    }
+
+
+    public static class TicketDetail {
+
+        private List<Ticket> Tickets;
+
+
+        public List<Ticket> getTickets() {
+            return Tickets;
+        }
+
+        public void setTickets(List<Ticket> tickets) {
+            Tickets = tickets;
+        }
+
+
+
     }
 
 }
