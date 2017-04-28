@@ -29,5 +29,32 @@ public class LessonsController {
         return this.repository.save(lesson);
     }
 
+    @GetMapping("/{index}")
+    public Lesson findTitlebyID(@PathVariable Long index) {
+        System.out.println(this.repository.findOne(index));
 
+
+        Lesson lesson = this.repository.findOne(index);
+        return lesson;
+
+
+    }
+
+
+    @PatchMapping("/{index}")
+    public Lesson updateTitlebyID(@PathVariable Long index, @RequestBody Lesson lesson1) {
+        System.out.println("index" + index);
+
+        Lesson lesson = this.repository.save(lesson1);
+        System.out.println(lesson);
+        return lesson;
+
+    }
+
+    @DeleteMapping("/{index}")
+    public void deleteTitlebyID(@PathVariable Long index) {
+        System.out.println("index" + index);
+        this.repository.delete(index);
+
+    }
 }
