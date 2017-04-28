@@ -57,4 +57,23 @@ public class LessonsController {
         this.repository.delete(index);
 
     }
+
+
+    @GetMapping("/movies/find/{title}")
+    public Lesson findMoviesbyTitle(@PathVariable String title) {
+
+        Lesson lesson = this.repository.findByTitle(title);
+        return lesson;
+
+
+    }
+
+    @GetMapping("/movies/between")
+    public int countMovies() {
+        int count = this.repository.countTitles();
+        return count;
+
+    }
+
+
 }
